@@ -324,7 +324,7 @@ module Tapioca
             when ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter
               "::ActiveSupport::TimeWithZone"
             else
-              handle_unknown_type(column_type)
+              handle_unknown_type(column_type.class)
             end
 
           column = constant.columns_hash[column_name]
