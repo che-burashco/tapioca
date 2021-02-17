@@ -793,4 +793,26 @@ class Tapioca::CliSpec < Minitest::HooksSpec
       refute_path_exists("#{outdir}/baz@0.0.1.rbi")
     end
   end
+
+  describe("#check") do
+    it 'returns false if no RBIs have changed' do
+      output = execute("check")
+
+      assert_includes(output, <<~OUTPUT)
+        Checking RBI status...
+
+          Nothing to do.
+      OUTPUT
+    end
+
+    it 'returns true if RBIs have changed' do
+      output = execute("check")
+
+      assert_includes(output, <<~OUTPUT)
+        Checking RBI status...
+
+          You have RBI files that are out-of-date. Please run `tapioca dsl` to update.
+      OUTPUT
+    end
+  end
 end

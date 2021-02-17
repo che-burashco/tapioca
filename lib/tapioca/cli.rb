@@ -94,6 +94,13 @@ module Tapioca
       end
     end
 
+    desc "check [constant...]", "check for outdated RBIs"
+    def check(*constants)
+      Tapioca.silence_warnings do
+        generator.check_dsl(constants)
+      end
+    end
+
     desc "--version, -v", "show version"
     def __print_version
       puts "Tapioca v#{Tapioca::VERSION}"

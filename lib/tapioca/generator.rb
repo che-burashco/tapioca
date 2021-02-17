@@ -160,6 +160,28 @@ module Tapioca
       puts
     end
 
+    sig { params(requested_constants: T::Array[String]).void }
+    def check_dsl(requested_constants)
+      say("Checking RBI status...")
+      Dir.mktmpdir do |dir|
+        load_application(eager_load: requested_constants.empty?)
+        load_dsl_generators
+
+        compiler = Compilers::DslCompiler.new(
+          requested_constants: constantize(requested_constants),
+          requested_generators: config.generators,
+          error_handler: ->(error) {}
+        )
+
+        compiler.run do |constant, contents|
+          compile_dsl_rbi(constant, contents, outpath: Pathname.new(dir))
+        end
+
+        # diff against existing dsl to check for out-of-date files
+
+      end
+    end
+
     private
 
     EMPTY_RBI_COMMENT = <<~CONTENT
@@ -456,14 +478,14 @@ module Tapioca
       end
     end
 
-    sig { params(constant: Module, contents: String).void }
-    def compile_dsl_rbi(constant, contents)
+    sig { params(constant: Module, contents: String, outpath: Pathname).void }
+    def compile_dsl_rbi(constant, contents, outpath: config.outpath)
       return if contents.nil?
 
       command = format(config.generate_command, constant.name)
       constant_name = Module.instance_method(:name).bind(constant).call
       rbi_name = constant_name.underscore + ".rbi"
-      filename = config.outpath / rbi_name
+      filename = outpath / rbi_name
 
       out = String.new
       out << rbi_header(
